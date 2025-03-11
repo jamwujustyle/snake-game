@@ -19,13 +19,64 @@ function draw() {
   drawFood();
   updateScore();
 }
+
 function drawSnake() {
-  snake.forEach((segment) => {
-    const snakeElement = createGameElement("div", "snake");
-    setPosition(snakeElement, segment);
-    board.appendChild(snakeElement);
+  snake.forEach((segment, index) => {
+    if (index === 0) {
+      // This is the head - use an image
+      const headElement = createSnakeHead();
+      setPosition(headElement, segment);
+      // Set the proper rotation based on direction
+      rotateSnakeHead(headElement, direction);
+      board.appendChild(headElement);
+    } else {
+      // These are body segments - use dots
+      const snakeElement = createGameElement("div", "snake");
+      setPosition(snakeElement, segment);
+      board.appendChild(snakeElement);
+    }
   });
 }
+
+// Create the snake head with an image
+function createSnakeHead() {
+  const head = document.createElement("div");
+  head.className = "snake-head";
+
+  const headImg = document.createElement("img");
+  headImg.src = "snake-head.png"; // Make sure this image exists in your project folder
+  headImg.alt = "Snake Head";
+
+  // Set the image size to match the grid
+  headImg.style.width = "100%";
+  headImg.style.height = "100%";
+  headImg.style.display = "block";
+
+  head.appendChild(headImg);
+  return head;
+}
+
+// Rotate the snake head based on direction
+function rotateSnakeHead(headElement, direction) {
+  let rotation = 0;
+  switch (direction) {
+    case "right":
+      rotation = 0;
+      break;
+    case "down":
+      rotation = 90;
+      break;
+    case "left":
+      rotation = 180;
+      break;
+    case "up":
+      rotation = 270;
+      break;
+  }
+
+  headElement.style.transform = `rotate(${rotation}deg)`;
+}
+
 // create a snake or food cube/div
 function createGameElement(tag, className) {
   const element = document.createElement(tag);
@@ -96,6 +147,7 @@ function startGame() {
     draw();
   }, gameSpeedDelay);
 }
+
 function handleKeyPress(event) {
   if (
     (!gameStarted && event.code === "Space") ||
@@ -105,16 +157,17 @@ function handleKeyPress(event) {
   } else {
     switch (event.key) {
       case "ArrowUp":
-        direction = "up";
+        // Prevent reversing direction
+        if (direction !== "down") direction = "up";
         break;
       case "ArrowDown":
-        direction = "down";
+        if (direction !== "up") direction = "down";
         break;
       case "ArrowLeft":
-        direction = "left";
+        if (direction !== "right") direction = "left";
         break;
       case "ArrowRight":
-        direction = "right";
+        if (direction !== "left") direction = "right";
         break;
     }
   }
@@ -132,6 +185,7 @@ function increaseSpeed() {
     gameSpeedDelay -= 1;
   }
 }
+
 function checkCollision() {
   const head = snake[0];
   if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
@@ -143,6 +197,7 @@ function checkCollision() {
     }
   }
 }
+
 function resetGame() {
   updateHighScore();
   stopGame();
@@ -152,9 +207,9 @@ function resetGame() {
   gameSpeedDelay = 200;
   updateScore();
 }
+
 function updateScore() {
   const currentScore = snake.length - 1;
-
   score.textContent = currentScore.toString().padStart(3, "0");
 }
 
@@ -164,6 +219,7 @@ function stopGame() {
   instructionText.style.display = "block";
   logo.style.display = "block";
 }
+
 function updateHighScore() {
   const currentScore = snake.length - 1;
   if (currentScore > highScore) {
